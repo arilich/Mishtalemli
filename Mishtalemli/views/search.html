@@ -5,7 +5,13 @@
     <title>Search</title>
 </head>
 <body>
-Hello {{email}}
-
+<div id="login">
+    <form id="searchform" method="post" action="/search">
+        <label for="search">Input: </label>
+        <input type="text" name="search" id="search">
+        <br/>
+        <input type="submit" value="SEARCH">
+    </form>
+</div>
 </body>
 </html>

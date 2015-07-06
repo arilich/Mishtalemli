@@ -4,10 +4,6 @@ var CONFIGS = JSON.parse(FS.readFileSync('./configs.json').toString());
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
 dynamo.setup('Users');
 
-var query = {Email: {S: 'test@gmail.com'}};
-dynamo.getItem(query).then(function (data) {
-    console.log('data: ', data);
-});
 var server = new Hapi.Server();
 server.connection({ port: CONFIGS.port });
 
@@ -32,14 +28,39 @@ server.route({
     path: '/',
     handler: function (request, reply) {
         if (request.payload.email) {
-            var data = {email : request.payload.email, password : request.payload.password};
-            console.log(data);
-            reply.view('search.html', data);
+            var queryData = {
+                email : request.payload.email,
+                password : request.payload.password};
+
+            //check if user exist in dynamodb
+            var query = {Email: {S: queryData.email}};
+            dynamo.getItem(query).then(function (data) {
+                if(data && data.Item.Password.S == queryData.password){
+
+                    //user exist, redirect to search page
+                    return reply.redirect('search').rewritable(false);
+                }else {
+                    console.log('user does not exist, please check your input or register!');
+                }
+            });
         } else {
             console.log('no email');
         }
     }
 });
+
+server.route({
+    method: 'POST',
+    path: '/search',
+    handler: function (request, reply) {
+        if(request.payload.search){
+
+        }else{
+            reply.view('search.html', {email: request.payload.email});
+        }
+    }
+});
+
 
 server.start(function () {
     console.log('Server running at:', server.info.uri);
