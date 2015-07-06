@@ -77,4 +77,4 @@ crashlytics.properties
 crashlytics-build.properties
 
 # configs
-Mishtalemli/configs.json
+*configs.json
