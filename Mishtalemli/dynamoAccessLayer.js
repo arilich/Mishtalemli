@@ -1,6 +1,5 @@
-module.exports = function () {
+module.exports = function (configs) {
     var Promise = require('bluebird');
-    var fs = require('fs');
     var AWS;
     var dynamodb;
     var table;
@@ -9,7 +8,7 @@ module.exports = function () {
     function setup(tableName) {
         table = tableName;
         AWS = require("aws-sdk");
-        AWS.config.loadFromPath('C:\\credentials.json');
+        AWS.config.loadFromPath(configs.credentials);
         dynamodb = new AWS.DynamoDB();
         Promise.promisifyAll(dynamodb);
     }
@@ -54,4 +53,4 @@ module.exports = function () {
         getItem : getItem,
         putItem : putItem
     };
-}
+};

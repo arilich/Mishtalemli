@@ -1,8 +1,11 @@
+var FS = require('fs');
 var Hapi = require('hapi');
 var dynamo = require('./dynamoAccessLayer')();
 dynamo.setup('table');
+var CONFIGS = JSON.parse(FS.readFileSync("./configs.json").toString());
+
 var server = new Hapi.Server();
-server.connection({ port: 80 });
+server.connection({ server:CONFIGS.server , port: CONFIGS.port });
 
 server.views({
     engines: {
