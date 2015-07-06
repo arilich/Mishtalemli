@@ -1,5 +1,6 @@
 var Hapi = require('hapi');
-
+var dynamo = require('./dynamoAccessLayer')();
+dynamo.setup('table');
 var server = new Hapi.Server();
 server.connection({ port: 80 });
 
