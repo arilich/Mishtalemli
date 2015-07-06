@@ -1,11 +1,15 @@
 var FS = require('fs');
 var Hapi = require('hapi');
-var dynamo = require('./dynamoAccessLayer')();
-dynamo.setup('table');
-var CONFIGS = JSON.parse(FS.readFileSync("./configs.json").toString());
+var CONFIGS = JSON.parse(FS.readFileSync('./configs.json').toString());
+var dynamo = require('./dynamoAccessLayer')(CONFIGS);
+dynamo.setup('Users');
 
+var query = {Email: {S: 'test@gmail.com'}};
+dynamo.getItem(query).then(function (data) {
+    console.log('data: ', data);
+});
 var server = new Hapi.Server();
-server.connection({ server:CONFIGS.server , port: CONFIGS.port });
+server.connection({ port: CONFIGS.port });
 
 server.views({
     engines: {
