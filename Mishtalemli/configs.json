@@ -1,5 +1,5 @@
 {
   "server":"localhost",
   "port": 8080,
-  "credentials":"C:\\test\\credentials.json"
+  "credentials":"C:\\credentials.json"
 }
