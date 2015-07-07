@@ -27,7 +27,29 @@ server.route({
     method: 'POST',
     path: '/',
     handler: function (request, reply) {
-        if (request.payload.email) {
+        // Check if request came from register
+        if (request.payload.firstname) {
+            var queryData = {
+                email : request.payload.email,
+                password : request.payload.password,
+                firstname : request.payload.firstname,
+                lastname : request.payload.lastname,
+                birthyear : request.payload.birthyear,
+                city : request.payload.city,
+                gender : request.payload.gender
+            }
+
+            var query = {Email : {S : queryData.email}, Password : {S : queryData.password},
+            FirstName : {S : queryData.firstname}, LastName : {S : queryData.lastname}, Birthyear : {N : queryData.birthyear}, City : {S : queryData.city},
+            Gender : {SS : [queryData.gender]}};
+
+            dynamo.putItem(query).then(function (data) {
+                return reply.view('index.html');
+            });
+        }
+
+        // Check if request came from sign in
+        else if (request.payload.email) {
             var queryData = {
                 email : request.payload.email,
                 password : request.payload.password};
@@ -35,12 +57,14 @@ server.route({
             //check if user exist in dynamodb
             var query = {Email: {S: queryData.email}};
             dynamo.getItem(query).then(function (data) {
-                if(data && data.Item.Password.S == queryData.password){
+                console.log(data);
+                if(data && data.Item && data.Item.Password.S == queryData.password){
 
                     //user exist, redirect to search page
                     return reply.redirect('search').rewritable(false);
                 }else {
                     console.log('user does not exist, please check your input or register!');
+                    return reply.view('index.html');
                 }
             });
         } else {
@@ -58,6 +82,15 @@ server.route({
         }else{
             reply.view('search.html', {email: request.payload.email});
         }
+    }
+});
+
+server.route({
+    method: 'GET',
+    path: '/register',
+    handler: function (request, reply) {
+        // Page requeted
+        reply.view('register.html');
     }
 });
 
