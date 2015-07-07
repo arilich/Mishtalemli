@@ -3,6 +3,9 @@ var Hapi = require('hapi');
 var CONFIGS = JSON.parse(FS.readFileSync('./configs.json').toString());
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
 dynamo.setup('Users');
+var ebay = require('./ebayAccessLayer')();
+var id = 'nonamec97-dbe0-4791-9985-731e31e5d36';
+ebay.setup(id);
 
 var server = new Hapi.Server();
 server.connection({ port: CONFIGS.port });
@@ -69,6 +72,7 @@ server.route({
             });
         } else {
             console.log('no email');
+            return reply.view('index.html');
         }
     }
 });
@@ -78,9 +82,12 @@ server.route({
     path: '/search',
     handler: function (request, reply) {
         if(request.payload.search){
-            ebaysearch(request.payload.search);
-        }else{
-            reply.view('search.html', {email: request.payload.email});
+            ebay.search(request.payload.search).then(function (result) {
+                console.log(result);
+                return reply.view('search.html', result);
+            });
+        } else {
+            return reply.view('search.html', {email: request.payload.email});
         }
     }
 });
@@ -90,7 +97,7 @@ server.route({
     path: '/register',
     handler: function (request, reply) {
         // Page requeted
-        reply.view('register.html');
+        return reply.view('register.html');
     }
 });
 
@@ -98,52 +105,3 @@ server.route({
 server.start(function () {
     console.log('Server running at:', server.info.uri);
 });
-
-function ebaysearch(keywords) {
-    // example simple request to FindingService:findItemsByKeywords
-
-    var ebay = require('ebay-api');
-
-    var id = 'nonamec97-dbe0-4791-9985-731e31e5d36';
-
-    var params = {};
-
-    params.keywords = [keywords];
-
-// add additional fields
-//params.outputSelector = [ 'AspectHistogram' ];
-
-//params['paginationInput.entriesPerPage'] = 5;
-
-
-    var filters = {};
-
-//filters.itemFilter = [
-//    new ebay.ItemFilter("FreeShippingOnly", true)
-//];
-
-//filters.domainFilter = [
-//    new ebay.ItemFilter("domainName", "Digital_Cameras")
-//];
-
-
-    ebay.ebayApiGetRequest({
-            serviceName: 'FindingService',
-            opType: 'findItemsByKeywords',
-            appId: id,      // FILL IN YOUR OWN APP KEY, GET ONE HERE: https://publisher.ebaypartnernetwork.com/PublisherToolsAPI
-            params: params,
-            filters: filters,
-            parser: ebay.parseItemsFromResponse    // (default)
-        },
-        // gets all the items together in a merged array
-        function itemsCallback(error, items) {
-            if (error) throw error;
-
-            console.log('Found', items.length, 'items');
-            
-            for (var i = 0; i < items.length; i++) {
-                console.log('- ' + items[i].title);
-            }
-        }
-    );
-}

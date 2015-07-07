@@ -5,8 +5,19 @@
     <title>Search</title>
 </head>
 <body>
-<div id="login">
+<div id="searchdiv">
     <form id="searchform" method="post" action="/search">
+        <img src="{{galleryURL}}" alt="Item">
+        <br>
+        {{title}}
+        <br>
+        Shipping: {{shippingInfo.shippingType}}
+        <br>
+        Price: {{sellingStatus.currentPrice.USD}} USD
+        <br>
+        <a href="{{viewItemURL}}">Click here to watch in ebay</a>
+        <br>
+        <br>
         <label for="search">Input: </label>
         <input type="text" name="search" id="search">
         <br/>
