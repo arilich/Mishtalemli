@@ -6,7 +6,11 @@ dynamo.setup('Users');
 var ebay = require('./ebayAccessLayer')();
 var id = 'nonamec97-dbe0-4791-9985-731e31e5d36';
 ebay.setup(id);
-
+var zap = require('./zapAccessLayer')();
+zap.setup();
+zap.search('g3').then(function (data) {
+    console.log(data);
+});
 var server = new Hapi.Server();
 server.connection({ port: CONFIGS.port });
 
