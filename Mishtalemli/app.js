@@ -4,13 +4,11 @@ var CONFIGS = JSON.parse(FS.readFileSync('./configs.json').toString());
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
 dynamo.setup('Users');
 var ebay = require('./ebayAccessLayer')();
-var id = 'nonamec97-dbe0-4791-9985-731e31e5d36';
-ebay.setup(id);
+var ebayid = 'nonamec97-dbe0-4791-9985-731e31e5d36';
+ebay.setup(ebayid);
 var zap = require('./zapAccessLayer')();
 zap.setup();
-zap.search('laptop').then(function (data) {
-    console.log(data);
-});
+
 var server = new Hapi.Server();
 server.connection({ port: CONFIGS.port });
 
@@ -86,12 +84,13 @@ server.route({
     path: '/search',
     handler: function (request, reply) {
         if(request.payload.search){
-            ebay.search(request.payload.search).then(function (result) {
-                console.log(result);
-                return reply.view('search.html', result);
+            ebay.search(request.payload.search).then(function (ebayResult) {
+                zap.search(request.payload.search).then(function (zapResult) {
+                    return reply.view('search.html', {zap : {price : zapResult[0]}, ebay : ebayResult});
+                });
             });
         } else {
-            return reply.view('search.html', {email: request.payload.email});
+            return reply.view('search.html', {zap : null, ebay : null});
         }
     }
 });

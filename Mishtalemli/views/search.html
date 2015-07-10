@@ -7,15 +7,17 @@
 <body>
 <div id="searchdiv">
     <form id="searchform" method="post" action="/search">
-        <img src="{{galleryURL}}" alt="Item">
+        <img src="{{ebay.galleryURL}}" alt="Item">
         <br>
-        {{title}}
+        <label name="ebaytitle">{{ebay.title}}</label>
         <br>
-        Shipping: {{shippingInfo.shippingType}}
+        <label name="ebayshippinginfo">Shipping info: {{ebay.shippingInfo.shippingType}}</label>
         <br>
-        Price: {{sellingStatus.currentPrice.USD}} USD
+        <label name="ebayprice">ebay Price: {{ebay.sellingStatus.currentPrice.USD}} USD</label>
         <br>
-        <a href="{{viewItemURL}}">Click here to watch in ebay</a>
+        <label name="zapprice">zap Price: {{zap.price}} NIS</label>
+        <br>
+        <a href="{{ebay.viewItemURL}}">Click here to watch in ebay</a>
         <br>
         <br>
         <label for="search">Input: </label>

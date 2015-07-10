@@ -27,7 +27,7 @@ module.exports = function () {
 
         ebay.ebayApiGetRequest({
                 serviceName: 'FindingService',
-                opType: 'findItemsByKeywords',
+                opType: 'findItemsAdvanced',
                 appId: id,      // FILL IN YOUR OWN APP KEY, GET ONE HERE: https://publisher.ebaypartnernetwork.com/PublisherToolsAPI
                 params: params,
                 filters: filters,
