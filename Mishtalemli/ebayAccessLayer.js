@@ -7,6 +7,27 @@ module.exports = function () {
         ebay = require('ebay-api');
         id = companyid;
     }
+    function getShippingCosts(itemId) {
+        var defer = Promise.defer();
+
+        // get item shipping costs
+        ebay.ebayApiGetRequest({
+                serviceName: 'ShoppingService',
+                opType: 'getShippingCosts',
+                appId: id,      // FILL IN YOUR OWN APP KEY, GET ONE HERE: https://publisher.ebaypartnernetwork.com/PublisherToolsAPI
+                params: {ItemID: itemId}
+            },
+
+            function shippingCallback(error, items) {
+                if (items) {
+                    console.log(items);
+                    defer.resolve(items);
+                }
+            }
+        );
+
+        return defer.promise;
+    }
 
     function search(keywords) {
         var defer = Promise.defer();
@@ -20,6 +41,12 @@ module.exports = function () {
         //filters.itemFilter = [
         //  new ebay.ItemFilter("FreeShippingOnly", true)
         //];
+        filters.itemFilter = [
+            new ebay.ItemFilter('AuthorizedSellerOnly', true),
+            new ebay.ItemFilter('AvailableTo', 'IL'),
+            new ebay.ItemFilter('Condition', 'New'),
+            new ebay.ItemFilter('HideDuplicateItems', true)
+        ];
 
         //filters.domainFilter = [
         //    new ebay.ItemFilter("domainName", "Digital_Cameras")
@@ -41,15 +68,22 @@ module.exports = function () {
                 for (var i = 0; i < items.length; i++) {
                     console.log('- ' + items[i].title);
                 }
-                defer.resolve(items[0]);
+
+                console.log(items[0]);
+                getShippingCosts(items[0].itemId).then(function (shippingCosts) {
+                    console.log(shippingCosts);
+                    defer.resolve(items[0]);
+                });
             }
         );
+
+
 
         return defer.promise;
     }
 
     return {
-        setup : setup,
-        search : search
+        setup: setup,
+        search: search
     };
-}
+};
