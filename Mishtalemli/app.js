@@ -3,7 +3,7 @@ var FS = require('fs');
 var Hapi = require('hapi');
 var CONFIGS = require('./configs.js');
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
-dynamo.setup('Users');
+dynamo.setup();
 var ebay = require('./ebayAccessLayer')();
 ebay.setup(CONFIGS.ebayAppId);
 var zap = require('./zapAccessLayer')();
@@ -33,6 +33,7 @@ server.route({
     path: '/',
     handler: function (request, reply) {
         // Check if request came from register
+        var table = 'Users';
         if (request.payload.firstname) {
             var queryData = {
                 email: request.payload.email,
@@ -54,7 +55,7 @@ server.route({
                 Gender: {SS: [queryData.gender]}
             };
 
-            dynamo.putItem(query).then(function (data) {
+            dynamo.putItem(table, query).then(function (data) {
                 return reply.view('index.html');
             });
         }
@@ -68,7 +69,7 @@ server.route({
 
             //check if user exist in dynamodb
             var query = {Email: {S: queryData.email}};
-            dynamo.getItem(query).then(function (data) {
+            dynamo.getItem(table, query).then(function (data) {
                 console.log(data);
                 if (data && data.Item && data.Item.Password.S == queryData.password) {
 
