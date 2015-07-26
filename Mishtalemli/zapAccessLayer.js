@@ -130,4 +130,4 @@ module.exports = function () {
         setup : setup,
         search : search
     };
-}
+};

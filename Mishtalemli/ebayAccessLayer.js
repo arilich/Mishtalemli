@@ -7,21 +7,27 @@ module.exports = function () {
         ebay = require('ebay-api');
         id = companyid;
     }
+
     function getShippingCosts(itemId) {
         var defer = Promise.defer();
-
+        console.log(itemId);
         // get item shipping costs
         ebay.ebayApiGetRequest({
-                serviceName: 'ShoppingService',
-                opType: 'getShippingCosts',
+                serviceName: 'Shopping',
+                opType: 'GetSingleItem',
                 appId: id,      // FILL IN YOUR OWN APP KEY, GET ONE HERE: https://publisher.ebaypartnernetwork.com/PublisherToolsAPI
-                params: {ItemID: itemId}
+                params: {
+                    DestinationCountryCode: 'IL',
+                    ItemId: itemId,
+                    IncludeDetails: true
+                }
             },
 
             function shippingCallback(error, items) {
+                if (error) throw error;
                 if (items) {
-                    console.log(items);
                     defer.resolve(items);
+                    return items;
                 }
             }
         );
@@ -70,20 +76,18 @@ module.exports = function () {
                 }
 
                 console.log(items[0]);
-                getShippingCosts(items[0].itemId).then(function (shippingCosts) {
-                    console.log(shippingCosts);
+                //getShippingCosts(items[0].itemId).then(function (result) {
                     defer.resolve(items[0]);
-                });
+                //});
             }
         );
-
-
 
         return defer.promise;
     }
 
     return {
         setup: setup,
-        search: search
+        search: search,
+        getShippingCosts : getShippingCosts
     };
 };

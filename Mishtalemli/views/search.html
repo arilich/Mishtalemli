@@ -1,30 +1,43 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title>Search</title>
-</head>
-<body>
-<div id="searchdiv">
-    <form id="searchform" method="post" action="/search">
-        <img src="{{ebay.galleryURL}}" alt="Item">
-        <br>
-        <label name="ebaytitle">{{ebay.title}}</label>
-        <br>
-        <label name="ebayshippinginfo">Shipping info: {{ebay.shippingInfo.shippingType}}</label>
-        <br>
-        <label name="ebayprice">ebay Price: {{ebay.sellingStatus.currentPrice.USD}} USD</label>
-        <br>
-        <label name="zapprice">zap Price: {{zap.price}} NIS</label>
-        <br>
-        <a href="{{ebay.viewItemURL}}">Click here to watch in ebay</a>
-        <br>
-        <br>
-        <label for="search">Input: </label>
-        <input type="text" name="search" id="search">
-        <br/>
-        <input type="submit" value="SEARCH">
-    </form>
-</div>
-</body>
-</html>
+<img src="{{ebay.galleryURL}}" alt="Item">
+<br>
+<label name="ebaytitle">{{ebay.title}}</label>
+<br>
+<label name="ebayshippinginfo">Shipping info: {{ebay.shippingInfo.shippingType}}</label>
+<br>
+<label name="ebayprice">ebay Price: {{ebay.sellingStatus.currentPrice.USD}} USD</label>
+<br>
+
+<label name="ebayshippingprice">Shipping price:</label>
+<div id="shipprice"></div>
+
+<script>
+    function getShippingCost() {
+        var httpRequest = new XMLHttpRequest();
+        var url = "http://open.api.ebay.com/shopping?" +
+                "callname=GetShippingCosts&" +
+                "responseencoding=JSON&" +
+                "appid=nonamec97-dbe0-4791-9985-731e31e5d36&" +
+                "siteid=0&" +
+                "version=771&"+
+                "ItemID={{ebay.itemId}}&" +
+                "DestinationCountryCode=IL&" +
+                "IncludeDetails=true";
+
+        httpRequest.open('GET', url, true);
+        httpRequest.onreadystatechange = function () {
+
+            if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+                console.log(httpRequest.responseText);
+                document.getElementById('shipprice').innerHTML = httpRequest.responseText;
+            }
+        };
+
+        httpRequest.send();
+    }
+    getShippingCost();
+</script>
+
+<label name="zapprice">zap Price: {{zap.price}} NIS</label>
+<br>
+<a href="{{ebay.viewItemURL}}">Click here to watch in ebay</a>
+<br>
