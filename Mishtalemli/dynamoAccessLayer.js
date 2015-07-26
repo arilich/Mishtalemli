@@ -2,18 +2,16 @@ module.exports = function (configs) {
     var Promise = require('bluebird');
     var AWS;
     var dynamodb;
-    var table;
 
 
-    function setup(tableName) {
-        table = tableName;
+    function setup() {
         AWS = require("aws-sdk");
         AWS.config.loadFromPath(configs.credentials);
         dynamodb = new AWS.DynamoDB();
         Promise.promisifyAll(dynamodb);
     }
 
-    function getItem(key) {
+    function getItem(table, key) {
         var defer = Promise.defer();
         var params = {TableName : table, Key : key};
         console.log(params);
@@ -25,7 +23,7 @@ module.exports = function (configs) {
         return defer.promise;
     }
 
-    function putItem(item) {
+    function putItem(table, item) {
         var defer = Promise.defer();
         var params = {TableName : table, Item : item};
         dynamodb.putItem(params, function (err, data) {
@@ -36,7 +34,7 @@ module.exports = function (configs) {
         return defer.promise;
     }
 
-    function query(query, indexName) {
+    function query(table, query, indexName) {
         var defer = Promise.defer();
         var params = {TableName : table, KeyConditions : query, ScanIndexForward : false, IndexName : indexName};
         dynamodb.query(params, function (err, data) {
