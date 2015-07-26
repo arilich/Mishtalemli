@@ -1,12 +1,11 @@
 var Path = require('path');
-var Async = require('async');
 var FS = require('fs');
 var Hapi = require('hapi');
 var CONFIGS = require('./configs.js');
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
 dynamo.setup('Users');
 var ebay = require('./ebayAccessLayer')();
-ebay.setup('nonamec97-dbe0-4791-9985-731e31e5d36');
+ebay.setup(CONFIGS.ebayAppId);
 var zap = require('./zapAccessLayer')();
 zap.setup();
 
