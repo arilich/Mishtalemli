@@ -12,6 +12,20 @@ zap.setup();
 var server = new Hapi.Server();
 server.connection({port: CONFIGS.port});
 
+function storeSearche(username, search) {
+    var words = search.split(' ');
+    var table = 'Words';
+    words.forEach(function (word) {
+        var query = {
+            User: {S : username},
+            Word : {S : word}
+        }
+        dynamo.putItem(table, query).then(function() {
+            console.log('Word ' + word + ' added to table');
+        });
+    });
+}
+
 server.views({
     engines: {
         html: require('handlebars')
@@ -32,8 +46,8 @@ server.route({
     method: 'POST',
     path: '/',
     handler: function (request, reply) {
-        // Check if request came from register
         var table = 'Users';
+        // Check if request come from register
         if (request.payload.firstname) {
             var queryData = {
                 email: request.payload.email,
@@ -60,7 +74,7 @@ server.route({
             });
         }
 
-        // Check if request came from sign in
+        // Check if request come from sign in
         else if (request.payload.email) {
             var queryData = {
                 email: request.payload.email,
@@ -93,16 +107,17 @@ server.route({
     handler: function (request, reply) {
         if (request.payload.search) {
             console.log('search start');
+            storeSearche(request.payload.email, request.payload.search);
             ebay.search(request.payload.search).then(function (ebayResult) {
                 zap.search(request.payload.search).then(function (zapResult) {
                     console.log('search end');
-                    return reply.view('search.html', {zap: {price: zapResult[0]}, ebay: ebayResult}, {layout: 'layout/layout'});
+                    return reply.view('search.html', {zap: {price: zapResult[0]}, ebay: ebayResult, email: request.payload.email}, {layout: 'layout/layout'});
                 });
             });
 
         } else {
             console.log('search end');
-            return reply.view('search_empty.html', {zap: null, ebay: null}, {layout: 'layout/layout'});
+            return reply.view('search_empty.html', {zap: null, ebay: null, email: request.payload.email}, {layout: 'layout/layout'});
         }
     }
 });

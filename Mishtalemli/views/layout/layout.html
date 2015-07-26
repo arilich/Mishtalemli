@@ -8,6 +8,7 @@
 <div id="searchdiv">
     {{{content}}}
     <form id="searchform" method="post" action="/search">
+        <input type="hidden" name="email" value="{{email}}">
         <label for="search">Input: </label>
         <input type="text" name="search" id="search">
         <br/>
