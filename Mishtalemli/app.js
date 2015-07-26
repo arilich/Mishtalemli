@@ -2,7 +2,7 @@ var Path = require('path');
 var Async = require('async');
 var FS = require('fs');
 var Hapi = require('hapi');
-var CONFIGS = JSON.parse(FS.readFileSync('./configs.json').toString());
+var CONFIGS = require('./configs.js');
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
 dynamo.setup('Users');
 var ebay = require('./ebayAccessLayer')();
