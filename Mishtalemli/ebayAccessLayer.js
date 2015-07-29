@@ -8,33 +8,6 @@ module.exports = function () {
         id = companyid;
     }
 
-    function getShippingCosts(itemId) {
-        var defer = Promise.defer();
-        console.log(itemId);
-        // get item shipping costs
-        ebay.ebayApiGetRequest({
-                serviceName: 'Shopping',
-                opType: 'GetSingleItem',
-                appId: id,      // FILL IN YOUR OWN APP KEY, GET ONE HERE: https://publisher.ebaypartnernetwork.com/PublisherToolsAPI
-                params: {
-                    DestinationCountryCode: 'IL',
-                    ItemId: itemId,
-                    IncludeDetails: true
-                }
-            },
-
-            function shippingCallback(error, items) {
-                if (error) throw error;
-                if (items) {
-                    defer.resolve(items);
-                    return items;
-                }
-            }
-        );
-
-        return defer.promise;
-    }
-
     function search(keywords) {
         var defer = Promise.defer();
         var params = {};
@@ -75,10 +48,7 @@ module.exports = function () {
                     console.log('- ' + items[i].title);
                 }
 
-                console.log(items[0]);
-                //getShippingCosts(items[0].itemId).then(function (result) {
-                    defer.resolve(items[0]);
-                //});
+                defer.resolve(items[0]);
             }
         );
 
@@ -87,7 +57,6 @@ module.exports = function () {
 
     return {
         setup: setup,
-        search: search,
-        getShippingCosts : getShippingCosts
+        search: search
     };
 };

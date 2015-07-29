@@ -2,28 +2,29 @@ var Path = require('path');
 var FS = require('fs');
 var Hapi = require('hapi');
 var CONFIGS = require('./configs.js');
+
+// Setup dynamo
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
 dynamo.setup();
+
+// Setup ebay
 var ebay = require('./ebayAccessLayer')();
 ebay.setup(CONFIGS.ebayAppId);
+
+// Setup zap
 var zap = require('./zapAccessLayer')();
 zap.setup();
+
+// Setup amazon
+var amazon = require('./amazonAccessLayer')();
+amazon.setup();
 
 var server = new Hapi.Server();
 server.connection({port: CONFIGS.port});
 
+// Save user query in dynamo
 function storeSearche(username, search) {
-    var words = search.split(' ');
-    var table = 'Words';
-    words.forEach(function (word) {
-        var query = {
-            User: {S : username},
-            Word : {S : word}
-        }
-        dynamo.putItem(table, query).then(function() {
-            console.log('Word ' + word + ' added to table');
-        });
-    });
+    throw "Not Implemented";
 }
 
 server.views({
@@ -107,7 +108,6 @@ server.route({
     handler: function (request, reply) {
         if (request.payload.search) {
             console.log('search start');
-            storeSearche(request.payload.email, request.payload.search);
             ebay.search(request.payload.search).then(function (ebayResult) {
                 zap.search(request.payload.search).then(function (zapResult) {
                     console.log('search end');
