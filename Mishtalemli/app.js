@@ -23,8 +23,15 @@ var server = new Hapi.Server();
 server.connection({port: CONFIGS.port});
 
 // Save user query in dynamo
-function storeSearche(username, search) {
-    throw "Not Implemented";
+function storeSearch(username, search) {
+    var table = 'Query';
+    var input = {
+        User : username,
+        Query : search
+    }
+
+    dynamo.putItem(table, input).then(function () {
+    });
 }
 
 server.views({
@@ -108,8 +115,8 @@ server.route({
     handler: function (request, reply) {
         if (request.payload.search) {
             console.log('search start');
-            ebay.search(request.payload.search).then(function (ebayResult) {
-                zap.search(request.payload.search).then(function (zapResult) {
+            zap.search(request.payload.search).then(function (zapResult) {
+                ebay.search(request.payload.search).then(function (ebayResult) {
                     console.log('search end');
                     return reply.view('search.html', {zap: {price: zapResult[0]}, ebay: ebayResult, email: request.payload.email}, {layout: 'layout/layout'});
                 });

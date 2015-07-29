@@ -47,11 +47,10 @@ module.exports = function () {
                 for (var i = 0; i < items.length; i++) {
                     console.log('- ' + items[i].title);
                 }
-
+                console.log(items[0]);
                 defer.resolve(items[0]);
             }
         );
-
         return defer.promise;
     }
 
