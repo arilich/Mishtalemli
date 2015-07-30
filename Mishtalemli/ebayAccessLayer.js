@@ -43,12 +43,14 @@ module.exports = function () {
             // gets all the items together in a merged array
             function itemsCallback(error, items) {
                 if (error) throw error;
-                console.log('Found', items.length, 'items');
-                for (var i = 0; i < items.length; i++) {
-                    console.log('- ' + items[i].title);
+                if (items) {
+                    console.log('Found', items.length, 'items');
+                    for (var i = 0; i < items.length; i++) {
+                        console.log('- ' + items[i].title);
+                    }
+                    console.log(items[0]);
+                    defer.resolve(items[0]);
                 }
-                console.log(items[0]);
-                defer.resolve(items[0]);
             }
         );
         return defer.promise;

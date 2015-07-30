@@ -14,9 +14,6 @@ ebay.setup(CONFIGS.ebayAppId);
 // Setup zap
 var zap = require('./zapAccessLayer')();
 zap.setup();
-zap.search('s6').then(function (res) {
-    //console.log(res);
-});
 
 // Setup amazon
 var amazon = require('./amazonAccessLayer')();
@@ -117,17 +114,27 @@ server.route({
     path: '/search',
     handler: function (request, reply) {
         if (request.payload.search) {
-            console.log('search start');
+            console.log('zap search start');
             zap.search(request.payload.search).then(function (zapResult) {
-                ebay.search(request.payload.search).then(function (ebayResult) {
-                    console.log('search end');
-                    return reply.view('search.html', {zap: {price: zapResult[0]}, ebay: ebayResult, email: request.payload.email}, {layout: 'layout/layout'});
+                console.log('zap search end');
+                var itemTitle = zapResult.Title;
+                console.log('Title: ' + itemTitle);
+                var zapPrice = zapResult.Price[0];
+                console.log('ebay search start');
+                ebay.search(itemTitle).then(function (ebayResult) {
+                    console.log('ebay search end');
+                    console.log('amazon search start');
+                    amazon.search(itemTitle).then(function (amazonResult) {
+                        console.log('amazon search end');
+                        console.log(amazonResult);
+                        return reply.view('search.html', {zap: {price: zapPrice}, ebay: ebayResult, amazon: amazonResult, email: request.payload.email}, {layout: 'layout/layout'});
+                    });
                 });
             });
 
         } else {
             console.log('search end');
-            return reply.view('search_empty.html', {zap: null, ebay: null, email: request.payload.email}, {layout: 'layout/layout'});
+            return reply.view('search_empty.html', {zap: null, ebay: null, amazon: null, email: request.payload.email}, {layout: 'layout/layout'});
         }
     }
 });
@@ -136,7 +143,7 @@ server.route({
     method: 'GET',
     path: '/register',
     handler: function (request, reply) {
-        // Page requeted
+        // Page requested
         return reply.view('register.html');
     }
 });

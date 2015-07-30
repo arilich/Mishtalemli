@@ -4,6 +4,8 @@ module.exports = function () {
     var cheerio = require('cheerio');
     var request = require('request');
 
+    var NoMatchFound = 'AWS.ECommerceService.NoExactMatches';
+
     function setup(credentialsPath) {
         var fs = require('fs');
         var credentials = JSON.parse(fs.readFileSync(credentialsPath));
@@ -22,7 +24,7 @@ module.exports = function () {
     }
 
     function search(query) {
-
+        console.log('Amazon query: ' + query);
         var defer = Promise.defer();
 
         opHelper.execute('ItemSearch', {
@@ -30,28 +32,40 @@ module.exports = function () {
             'Keywords': query,
             'ResponseGroup': 'ItemAttributes,Offers,OfferListings,OfferFull'
         }, function (err, results) { // you can add a third parameter for the raw xml response, "results" here are currently parsed using xml2js
+            // API Error
             if (err) console.log(err);
-            if (results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0] === 'Too low to display') {
-                var ptd = results.ItemSearchResponse.Items[0].Item[0].ItemAttributes[0].ProductTypeName[0]
-                var asin = results.ItemSearchResponse.Items[0].Item[0].ASIN[0];
-                var priceUrl = 'http://www.amazon.com/gp/product/ajax-handlers/generic-hlcx.html?ie=UTF8&ptd=' + ptd + '&useTwister=true&viewId=MAP_AJAX&ASIN=' + asin + '&optionalParams={"mapPopover":"true","coliid":null,"colid":null,"isPrime":"0"}&wdg=pc_display_on_website&isVariationalParent=false';
-                request({
-                    method: 'GET',
-                    url: priceUrl
-                }, function (err, response, body) {
-                    if (err) return console.error(err);
-                    $ = cheerio.load(body);
-                    var price = $('span#priceblock_ourprice').html();
-                    defer.resolve(price);
-                });
-            } else {
-                var price = results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0];
-                defer.resolve(price);
+            // No Match Found
+            else if (results.ItemSearchResponse.Items[0].Request[0].Errors) {
+                if (results.ItemSearchResponse.Items[0].Request[0].Errors[0].Error[0].Code[0] === NoMatchFound) {
+                    defer.resolve({price : 0});
+                }
             }
-            // Lowest Price
-            //console.log(results.ItemSearchResponse.Items[0].Item[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0]);
-            // Amazon offer listing - Prime
-            //console.log(results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0])
+            // Match found - No Errors
+            else {
+                // If hidden price
+                if (results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0] === 'Too low to display') {
+                    var ptd = results.ItemSearchResponse.Items[0].Item[0].ItemAttributes[0].ProductTypeName[0]
+                    var asin = results.ItemSearchResponse.Items[0].Item[0].ASIN[0];
+                    var priceUrl = 'http://www.amazon.com/gp/product/ajax-handlers/generic-hlcx.html?ie=UTF8&ptd=' + ptd + '&useTwister=true&viewId=MAP_AJAX&ASIN=' + asin + '&optionalParams={"mapPopover":"true","coliid":null,"colid":null,"isPrime":"0"}&wdg=pc_display_on_website&isVariationalParent=false';
+                    request({
+                        method: 'GET',
+                        url: priceUrl
+                    }, function (err, response, body) {
+                        if (err) return console.error(err);
+                        $ = cheerio.load(body);
+                        var price = $('span#priceblock_ourprice').html();
+                        defer.resolve({price : price});
+                    });
+                // No hidden price
+                } else {
+                    var price = results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0];
+                    defer.resolve({price : price});
+                }
+                // Lowest Price
+                //console.log(results.ItemSearchResponse.Items[0].Item[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0]);
+                // Amazon offer listing - Prime
+                //console.log(results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0])
+            }
         });
 
         return defer.promise;
