@@ -4,13 +4,16 @@ module.exports = function () {
     var cheerio = require('cheerio');
     var request = require('request');
 
-    function setup() {
+    function setup(credentialsPath) {
+        var fs = require('fs');
+        var credentials = JSON.parse(fs.readFileSync(credentialsPath));
+
         var util = require('util'),
             OperationHelper = require('apac').OperationHelper;
 
         opHelper = new OperationHelper({
-            awsId: 'AKIAIGLSJJ63XFFC2CVA',
-            awsSecret: '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',
+            awsId: credentials.accessKeyId,
+            awsSecret: credentials.secretAccessKey,
             assocId: 'mishtalemli-20',
             // xml2jsOptions: an extra, optional, parameter for if you want to pass additional options for the xml2js module. (see https://github.com/Leonidas-from-XIV/node-xml2js#options)
             version: '2013-08-01'

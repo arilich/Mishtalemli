@@ -61,12 +61,40 @@ module.exports = function () {
     //    return defer.promise;
     //}
 
+    // Return the title of the first item
+    function getItemTitle(html, modelUri) {
+        var title;
+        $ = cheerio.load(html);
+        $('a').each(function (i, a) {
+            if (a.attribs.href === modelUri) {
+                if (a.children) {
+                    a.children.forEach(function (child) {
+                        if (child.data) {
+
+                            console.log('child: ');
+                            title = child.data.replace('/ |\r|\r\n|\n/g', '');
+                            console.log(title);
+                            var englishStart = title.match('\\w');
+                            if (englishStart != null) {
+                                title = title.substring(title.indexOf(englishStart[0]));
+                                //console.log(title);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        return title;
+    };
+
     function search(keyword) {
         var priceResultsArray = [];
-            var defer = Promise.defer();
+        var defer = Promise.defer();
+        var itemTitle;
+        var url = 'http://www.zap.co.il/search.aspx?keyword=' + keyword;
             request({
                 method: 'GET',
-                url: 'http://www.zap.co.il/search.aspx?keyword=' + keyword
+                url: url
             }, function(err, response, html) {
                 if (err) throw err;
                 // OK
@@ -85,6 +113,8 @@ module.exports = function () {
                                             pricesClass.children.forEach(function (pricesChild) {
                                                 if (pricesChild.name == 'a') {
                                                     modelUri = pricesChild.attribs.href;
+                                                    itemTitle = getItemTitle(html, modelUri);
+                                                    console.log(itemTitle);
                                                 }
                                             });
                                         });
@@ -117,7 +147,7 @@ module.exports = function () {
                                     }
                                 });
                             });
-                            defer.resolve(priceResultsArray);
+                            defer.resolve({Price : priceResultsArray, Title : itemTitle});
                         }
                     });
                 }

@@ -14,10 +14,13 @@ ebay.setup(CONFIGS.ebayAppId);
 // Setup zap
 var zap = require('./zapAccessLayer')();
 zap.setup();
+zap.search('s6').then(function (res) {
+    //console.log(res);
+});
 
 // Setup amazon
 var amazon = require('./amazonAccessLayer')();
-amazon.setup();
+amazon.setup(CONFIGS.credentials);
 
 var server = new Hapi.Server();
 server.connection({port: CONFIGS.port});
