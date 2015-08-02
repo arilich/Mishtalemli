@@ -35,7 +35,7 @@ module.exports = function () {
         var priceResultsArray = [];
         var defer = Promise.defer();
         var itemTitle;
-        var url = 'http://www.zap.co.il/search.aspx?keyword=' + keyword;
+        var url = 'http://www.zap.co.il/search.aspx?keyword=' + encodeURIComponent(keyword);
         request({
             method: 'GET',
             url: url

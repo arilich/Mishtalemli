@@ -1,13 +1,13 @@
-<img src="{{ebay.galleryURL}}" alt="Item">
+<img class="search-image" src="{{image}}" alt="Item">
 <br>
-<label name="ebaytitle">{{ebay.title}}</label>
+<label class="search-label" name="ebaytitle">{{ebay.title}}</label>
 <br>
-<label name="ebayshippinginfo">Shipping info: {{ebay.shippingInfo.shippingType}}</label>
+<label class="search-label" name="ebayshippinginfo">Shipping info: {{ebay.shippingInfo.shippingType}}</label>
 <br>
-<label name="ebayprice">ebay Price: {{ebay.sellingStatus.currentPrice.USD}} USD</label>
+<label class="search-label" name="ebayprice">ebay Price: {{ebay.sellingStatus.currentPrice.USD}} USD</label>
 <br>
 
-<div>Shipping price: <span id="shipprice"></span></div>
+<div class="search-label">Shipping price: <span id="shipprice"></span></div>
 
 <script>
     function getShippingCost() {
@@ -36,9 +36,9 @@
     getShippingCost();
 </script>
 
-<label name="zapprice">zap Price: {{zap.price}} NIS</label>
+<label class="search-label" name="zapprice">zap Price: {{zap.price}} NIS</label>
 <br>
-<label name="amazonprice">amazon Price: {{amazon.price}} USD</label>
+<label class="search-label" name="amazonprice">amazon Price: {{amazon.price}} USD</label>
 <br>
-<a href="{{ebay.viewItemURL}}">Click here to watch in ebay</a>
+<a class="search-label" href="{{ebay.viewItemURL}}">Click here to watch in ebay</a>
 <br>

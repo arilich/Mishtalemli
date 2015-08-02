@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>Search</title>
+    <link href="main.css" type="text/css" rel="stylesheet">
 </head>
 <body>
 <div id="searchdiv">
     {{{content}}}
-    <form id="searchform" method="post" action="/search">
+    <form class="form" id="searchform" method="post" action="/search">
         <input type="hidden" name="email" value="{{email}}">
-        <label for="search">Input: </label>
-        <input type="text" name="search" id="search">
-        <br/>
-        <input type="submit" value="SEARCH">
+        <input class="form-control" placeholder="Query" type="text" name="search" id="search" required autofocus>
+        <br>
+        <br>
+        <input class="button" type="submit" value="Search">
     </form>
 </div>
 </body>

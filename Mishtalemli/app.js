@@ -20,7 +20,16 @@ var amazon = require('./amazonAccessLayer')();
 amazon.setup(CONFIGS.credentials);
 
 var server = new Hapi.Server();
-server.connection({port: CONFIGS.port});
+server.connection(
+    { port: CONFIGS.port,
+        routes: {
+            files: {
+                relativeTo: Path.join(__dirname, 'public')
+            }
+        }
+    }
+);
+
 
 // Save user query in dynamo
 function storeSearch(username, search) {
@@ -40,6 +49,16 @@ server.views({
     },
     relativeTo: __dirname,
     path: './views'
+});
+
+// Get static resources from folder 'public'
+server.route({
+    method: 'GET',
+    path: '/{file}.{extension}',
+    handler: function (request, reply) {
+        var path = request.params.file + '.' + request.params.extension;
+        reply.file(path);
+    }
 });
 
 server.route({
@@ -125,9 +144,14 @@ server.route({
                     console.log('ebay search end');
                     console.log('amazon search start');
                     amazon.search(itemTitle).then(function (amazonResult) {
+                        var image;
+                        if (ebayResult) {
+                            image = ebayResult.galleryURL;
+                        } else if (amazonResult) {
+                            image = amazonResult.image;
+                        }
                         console.log('amazon search end');
-                        console.log(amazonResult);
-                        return reply.view('search.html', {zap: {price: zapPrice}, ebay: ebayResult, amazon: amazonResult, email: request.payload.email}, {layout: 'layout/layout'});
+                        return reply.view('search.html', {zap: {price: zapPrice}, ebay: ebayResult, amazon: amazonResult, email: request.payload.email, image : image}, {layout: 'layout/layout'});
                     });
                 });
             });

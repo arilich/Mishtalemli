@@ -1,0 +1,66 @@
+body {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #eee;
+}
+
+.form {
+    background-color: #eee;
+    max-width: 450px;
+    padding: 15px;
+    margin: 0 auto;
+    text-align: center;
+}
+.form .form-heading {
+    margin-bottom: 10px;
+    width: 300px;
+}
+
+.form .form-control {
+    position: relative;
+    height: auto;
+    width: 300px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.form .button {
+    position: relative;
+    height: auto;
+    width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #3b5998;
+    color: #ffffff;
+    box-sizing: border-box;
+    border-radius: 20px;
+}
+
+.sign-up {
+    font-size: 16px;
+}
+
+.home-button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.button:hover,
+.home-button:hover {
+    opacity: 0.8;
+}
+
+.search-label {
+    display: block;
+    text-align: center;
+}
+
+.search-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

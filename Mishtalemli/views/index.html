@@ -3,19 +3,23 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>Login</title>
+    <link href="main.css" type="text/css" rel="stylesheet">
 </head>
 <body>
     <div id="login">
-        <form id="loginform" method="post" action="/">
-            <label for="email">Email: </label>
-            <input type="text" name="email" id="email"><br>
-            <label for="password">Password: </label>
-            <input type="password" name="password" id="password">
+        <form class="form" id="loginform" method="post" action="/">
+            <h2 class="form-heading">Please Sign in</h2>
+            <input type="email" class="form-control" placeholder="Email address" name="email" id="email" required autofocus>
             <br>
-            <input type="submit" value="submit">
+            <input type="password" class="form-control" placeholder="Password" name="password" id="password" required>
+            <br>
+            <br>
+            <a class="sign-up" href="/register">sign up</a>
+            <br>
+            <br>
+            <input class="button" type="submit" value="Sign in">
         </form>
 
-        <a href="/register">sign up</a>
     </div>
 </body>
 </html>

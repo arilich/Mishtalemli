@@ -3,32 +3,29 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>Register</title>
+    <link href="main.css" type="text/css" rel="stylesheet">
 </head>
 <body>
+<image class="home-button" src="home_button.png" height="75px" width="75px" onclick="javascript:history.back()"></image>
+
 <div id="register">
-    <form id="registerform" method="post" action="/">
-        <label for="email">Email: </label>
-        <input type="text" name="email" id="email">
+    <form class="form" id="registerform" method="post" action="/">
+        <input class="form-control" placeholder="Email" type="text" name="email" id="email" required autofocus>
         <br>
-        <label for="password">Password: </label>
-        <input type="password" name="password" id="password">
+        <input class="form-control" placeholder="Password" type="password" name="password" id="password" required>
         <br>
-        <label for="firstname">Firstname: </label>
-        <input type="text" name="firstname" id="firstname">
+        <input class="form-control" placeholder="First Name" type="text" name="firstname" id="firstname" required>
         <br>
-        <label for="lastname">Lastname: </label>
-        <input type="text" name="lastname" id="lastname">
+        <input class="form-control" placeholder="Last Name" type="text" name="lastname" id="lastname" required>
         <br>
-        <label for="birthyear">Birthyear: </label>
-        <input type="number" name="birthyear" id="birthyear">
+        <input class="form-control" placeholder="Birthday" type="number" name="birthyear" id="birthyear" required>
         <br>
-        <label for="city">City: </label>
-        <input type="text" name="city" id="city">
+        <input class="form-control" placeholder="City" type="text" name="city" id="city" required>
         <br>
         <input type="radio" name="gender" value="male" checked>Male
         <input type="radio" name="gender" value="female">Female
         <br>
-        <input type="submit" value="Register">
+        <input class="button" type="submit" value="Register">
     </form>
 </div>
 </body>

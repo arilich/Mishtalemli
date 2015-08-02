@@ -30,7 +30,7 @@ module.exports = function () {
         opHelper.execute('ItemSearch', {
             'SearchIndex': 'All',
             'Keywords': query,
-            'ResponseGroup': 'ItemAttributes,Offers,OfferListings,OfferFull'
+            'ResponseGroup': 'ItemAttributes,Offers,OfferListings,OfferFull,Images'
         }, function (err, results) { // you can add a third parameter for the raw xml response, "results" here are currently parsed using xml2js
             // API Error
             if (err) console.log(err);
@@ -42,6 +42,7 @@ module.exports = function () {
             }
             // Match found - No Errors
             else {
+                var imageMedium = results.ItemSearchResponse.Items[0].Item[0].MediumImage[0].URL[0];
                 // If hidden price
                 if (results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0] === 'Too low to display') {
                     var ptd = results.ItemSearchResponse.Items[0].Item[0].ItemAttributes[0].ProductTypeName[0]
@@ -54,12 +55,12 @@ module.exports = function () {
                         if (err) return console.error(err);
                         $ = cheerio.load(body);
                         var price = $('span#priceblock_ourprice').html();
-                        defer.resolve({price : price});
+                        defer.resolve({price : price, image : imageMedium});
                     });
                 // No hidden price
                 } else {
                     var price = results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0];
-                    defer.resolve({price : price});
+                    defer.resolve({price : price, image : imageMedium});
                 }
                 // Lowest Price
                 //console.log(results.ItemSearchResponse.Items[0].Item[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0]);
