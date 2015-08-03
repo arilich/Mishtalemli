@@ -3,12 +3,14 @@ module.exports = function () {
     var opHelper;
     var cheerio = require('cheerio');
     var request = require('request');
+    var searchResponse;
 
     var NoMatchFound = 'AWS.ECommerceService.NoExactMatches';
 
     function setup(credentialsPath) {
         var fs = require('fs');
         var credentials = JSON.parse(fs.readFileSync(credentialsPath));
+        searchResponse = require('./SearchResponse');
 
         var util = require('util'),
             OperationHelper = require('apac').OperationHelper;
@@ -24,9 +26,8 @@ module.exports = function () {
     }
 
     function search(query) {
-        console.log('Amazon query: ' + query);
         var defer = Promise.defer();
-
+        var response;
         opHelper.execute('ItemSearch', {
             'SearchIndex': 'All',
             'Keywords': query,
@@ -37,7 +38,8 @@ module.exports = function () {
             // No Match Found
             else if (results.ItemSearchResponse.Items[0].Request[0].Errors) {
                 if (results.ItemSearchResponse.Items[0].Request[0].Errors[0].Error[0].Code[0] === NoMatchFound) {
-                    defer.resolve({price : 0});
+                    response = searchResponse.build(undefined, 'amazon');
+                    defer.resolve(response);
                 }
             }
             // Match found - No Errors
@@ -55,12 +57,16 @@ module.exports = function () {
                         if (err) return console.error(err);
                         $ = cheerio.load(body);
                         var price = $('span#priceblock_ourprice').html();
-                        defer.resolve({price : price, image : imageMedium});
+                        results.price = price;
+                        response = searchResponse.build(results, 'amazon');
+                        defer.resolve(response);
                     });
                 // No hidden price
                 } else {
                     var price = results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0];
-                    defer.resolve({price : price, image : imageMedium});
+                    results.price = price;
+                    response = searchResponse.build(results, 'amazon');
+                    defer.resolve(response);
                 }
                 // Lowest Price
                 //console.log(results.ItemSearchResponse.Items[0].Item[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0]);

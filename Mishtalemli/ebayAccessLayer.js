@@ -2,10 +2,12 @@ module.exports = function () {
     var Promise = require('bluebird');
     var ebay;
     var id;
+    var searchResponse;
 
     function setup(companyid) {
         ebay = require('ebay-api');
         id = companyid;
+        searchResponse = require('./SearchResponse');
     }
 
     function search(keywords) {
@@ -21,7 +23,7 @@ module.exports = function () {
         //  new ebay.ItemFilter("FreeShippingOnly", true)
         //];
         filters.itemFilter = [
-            new ebay.ItemFilter('AuthorizedSellerOnly', true),
+            //new ebay.ItemFilter('AuthorizedSellerOnly', true),
             new ebay.ItemFilter('AvailableTo', 'IL'),
             new ebay.ItemFilter('Condition', 'New'),
             new ebay.ItemFilter('HideDuplicateItems', true)
@@ -44,12 +46,8 @@ module.exports = function () {
             function itemsCallback(error, items) {
                 if (error) throw error;
                 if (items) {
-                    console.log('Found', items.length, 'items');
-                    for (var i = 0; i < items.length; i++) {
-                        console.log('- ' + items[i].title);
-                    }
-                    console.log(items[0]);
-                    defer.resolve(items[0]);
+                    var response = searchResponse.build(items[0], 'ebay');
+                    defer.resolve(response);
                 }
             }
         );

@@ -1,13 +1,20 @@
-<img class="search-image" src="{{image}}" alt="Item">
+{{#if ebay.Image}}
+<img class="search-image" src="{{ebay.Image}}" alt="Item">
+{{else}}
+{{#if amazon.Image}}
+<img class="search-image" src="{{amazon.Image}}" alt="Item">
+{{/if}}
+{{/if}}
 <br>
-<label class="search-label" name="ebaytitle">{{ebay.title}}</label>
+{{#if ebay.Title}}
+<label class="search-label" name="ebaytitle">{{ebay.Title}}</label>
+{{/if}}
 <br>
-<label class="search-label" name="ebayshippinginfo">Shipping info: {{ebay.shippingInfo.shippingType}}</label>
+{{#if ebay.Price}}
+<label class="search-label" name="ebayprice">ebay Price: {{ebay.Price}}$</label>
 <br>
-<label class="search-label" name="ebayprice">ebay Price: {{ebay.sellingStatus.currentPrice.USD}} USD</label>
-<br>
-
 <div class="search-label">Shipping price: <span id="shipprice"></span></div>
+{{/if}}
 
 <script>
     function getShippingCost() {
@@ -18,7 +25,7 @@
                 "appid=nonamec97-dbe0-4791-9985-731e31e5d36&" +
                 "siteid=0&" +
                 "version=771&"+
-                "ItemID={{ebay.itemId}}&" +
+                "ItemID={{ebay.Id}}&" +
                 "DestinationCountryCode=IL&" +
                 "IncludeDetails=true";
 
@@ -35,10 +42,13 @@
     }
     getShippingCost();
 </script>
-
-<label class="search-label" name="zapprice">zap Price: {{zap.price}} NIS</label>
+{{#if zap.Price}}
+<label class="search-label" name="zapprice">zap Price: {{zap.Price}} NIS</label>
+{{/if}}
 <br>
-<label class="search-label" name="amazonprice">amazon Price: {{amazon.price}} USD</label>
+{{#if amazon.Price}}
+<label class="search-label" name="amazonprice">amazon Price: {{amazon.Price}}</label>
+{{/if}}
 <br>
-<a class="search-label" href="{{ebay.viewItemURL}}">Click here to watch in ebay</a>
+<a class="search-label" href="{{ebay.Link}}">Click here to watch in ebay</a>
 <br>

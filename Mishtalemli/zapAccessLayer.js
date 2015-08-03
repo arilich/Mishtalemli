@@ -2,11 +2,13 @@ module.exports = function () {
     var Promise;
     var cheerio;
     var request;
+    var searchResponse;
 
     function setup() {
         cheerio = require('cheerio');
         request = require('request');
         Promise = require('bluebird');
+        searchResponse = require('./SearchResponse');
     }
 
     // Return the title of the first item
@@ -43,6 +45,7 @@ module.exports = function () {
             if (err) throw err;
             // OK
             if (response.statusCode == 200) {
+                var modelId;
                 var modelUri;
                 var counter = 0;
                 $ = cheerio.load(html);
@@ -57,6 +60,7 @@ module.exports = function () {
                                         pricesClass.children.forEach(function (pricesChild) {
                                             if (pricesChild.name == 'a') {
                                                 modelUri = pricesChild.attribs.href;
+                                                modelId = modelUri.substring(modelUri.indexOf('=') + 1);
                                                 itemTitle = getItemTitle(html, modelUri);
                                             }
                                         });
@@ -90,7 +94,9 @@ module.exports = function () {
                                 }
                             });
                         });
-                        defer.resolve({Price: priceResultsArray, Title: itemTitle});
+                        var response = searchResponse.build({Title: itemTitle, Price: priceResultsArray[0],
+                        Link: url, Image: 'No image', Id: modelId}, 'zap');
+                        defer.resolve(response);
                     }
                 });
             }

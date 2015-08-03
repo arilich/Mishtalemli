@@ -10,6 +10,7 @@ dynamo.setup();
 // Setup ebay
 var ebay = require('./ebayAccessLayer')();
 ebay.setup(CONFIGS.ebayAppId);
+//ebay.searchComputer()
 
 // Setup zap
 var zap = require('./zapAccessLayer')();
@@ -136,26 +137,21 @@ server.route({
             console.log('zap search start');
             zap.search(request.payload.search).then(function (zapResult) {
                 console.log('zap search end');
-                var itemTitle = zapResult.Title;
-                console.log('Title: ' + itemTitle);
-                var zapPrice = zapResult.Price[0];
                 console.log('ebay search start');
-                ebay.search(itemTitle).then(function (ebayResult) {
+                ebay.search(zapResult.Title).then(function (ebayResult) {
                     console.log('ebay search end');
                     console.log('amazon search start');
-                    amazon.search(itemTitle).then(function (amazonResult) {
-                        var image;
-                        if (ebayResult) {
-                            image = ebayResult.galleryURL;
-                        } else if (amazonResult) {
-                            image = amazonResult.image;
-                        }
+                    amazon.search(zapResult.Title).then(function (amazonResult) {
                         console.log('amazon search end');
-                        return reply.view('search.html', {zap: {price: zapPrice}, ebay: ebayResult, amazon: amazonResult, email: request.payload.email, image : image}, {layout: 'layout/layout'});
+                        //amazonResult.Image = 'http://ecx.images-amazon.com/images/I/412Iki3-qML._SX425_.jpg';
+                        ebayResult.Image = null;
+                        console.log('zapResult: ' + JSON.stringify(zapResult));
+                        console.log('ebayResult: ' + JSON.stringify(ebayResult));
+                        console.log('amazonResult: ' + JSON.stringify(amazonResult));
+                        return reply.view('search.html', {zap: zapResult, ebay: ebayResult, amazon: amazonResult, email: request.payload.email}, {layout: 'layout/layout'});
                     });
                 });
             });
-
         } else {
             console.log('search end');
             return reply.view('search_empty.html', {zap: null, ebay: null, amazon: null, email: request.payload.email}, {layout: 'layout/layout'});
