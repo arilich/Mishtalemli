@@ -143,8 +143,6 @@ server.route({
                     console.log('amazon search start');
                     amazon.search(zapResult.Title).then(function (amazonResult) {
                         console.log('amazon search end');
-                        //amazonResult.Image = 'http://ecx.images-amazon.com/images/I/412Iki3-qML._SX425_.jpg';
-                        ebayResult.Image = null;
                         console.log('zapResult: ' + JSON.stringify(zapResult));
                         console.log('ebayResult: ' + JSON.stringify(ebayResult));
                         console.log('amazonResult: ' + JSON.stringify(amazonResult));

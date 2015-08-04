@@ -21,10 +21,8 @@ module.exports = function () {
                     a.children.forEach(function (child) {
                         if (child.data && child.data.replace(/\r|\n\s+/g, '') != '') {
                             title = child.data;
-                            var englishStart = title.match('\\w');
-                            if (englishStart != null) {
-                                title = title.substring(title.indexOf(englishStart[0]));
-                            }
+                            var matchArray = title.match('([A-z 0-9-]+).*?([A-z 0-9-]+)+');
+                            title = (matchArray[1] + matchArray[2]).trim();
                         }
                     });
                 }

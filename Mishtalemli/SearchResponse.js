@@ -25,7 +25,11 @@ SearchResponse.prototype.build = function (response, refferer){
             searchResponse.Title = response.ItemSearchResponse.Items[0].Item[0].ItemAttributes[0].Title[0];
             searchResponse.Price = response.price;
             searchResponse.Link = response.ItemSearchResponse.Items[0].Item[0].DetailPageURL[0];
-            searchResponse.Image = response.ItemSearchResponse.Items[0].Item[0].MediumImage[0].URL[0];
+            if (response.ItemSearchResponse.Items[0].Item[0].MediumImage) {
+                searchResponse.Image = response.ItemSearchResponse.Items[0].Item[0].MediumImage[0].URL[0];
+            } else if (response.ItemSearchResponse.Items[0].Item[0].ImageSets) {
+                searchResponse.Image = response.ItemSearchResponse.Items[0].Item[0].ImageSets[0].ImageSet[0].MediumImage[0].URL[0];
+            }
             searchResponse.Id = response.ItemSearchResponse.Items[0].Item[0].ASIN[0];
         } else if (refferer == 'zap') {
             searchResponse.Title = response.Title;

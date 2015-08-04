@@ -44,7 +44,6 @@ module.exports = function () {
             }
             // Match found - No Errors
             else {
-                var imageMedium = results.ItemSearchResponse.Items[0].Item[0].MediumImage[0].URL[0];
                 // If hidden price
                 if (results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0] === 'Too low to display') {
                     var ptd = results.ItemSearchResponse.Items[0].Item[0].ItemAttributes[0].ProductTypeName[0]
