@@ -6,16 +6,10 @@
 {{/if}}
 {{/if}}
 <br>
-{{#if ebay.Title}}
-<label class="search-label" name="ebaytitle">{{ebay.Title}}</label>
+{{#if zap.Title}}
+<label class="search-label" name="zaptitle">{{zap.Title}}</label>
 {{/if}}
 <br>
-{{#if ebay.Price}}
-<label class="search-label" name="ebayprice">ebay Price: {{ebay.Price}}$</label>
-<br>
-<div class="search-label">Shipping price: <span id="shipprice"></span></div>
-{{/if}}
-
 <script>
     function getShippingCost() {
         var httpRequest = new XMLHttpRequest();
@@ -43,33 +37,60 @@
     getShippingCost();
 </script>
 
-{{#if zap.Price}}
-<label class="search-label" name="zapprice">zap Price: {{zap.Price}} NIS</label>
-{{/if}}
-<br>
-{{#if amazon.Price}}
-<label class="search-label" name="amazonprice">amazon Price: {{amazon.Price}}</label>
-{{/if}}
-<br>
-<a class="search-label" href="{{ebay.Link}}">Click here to watch in ebay</a>
-<br>
-<div id="table">
-    <table id="orderTable">
+<div id="table" class="search-table">
+    <table id="orderTable" align="center">
         <tr>
-            <th class="title"></th>
-            <th class="title"></th>
-            <th class="title"></th>
-            <th class="title"></th>
-            <th class="title"></th>
-            <th class="title"></th>
+            {{#if zap.Id}}
+            <th class="title">
+                <img class="search-shopping-image" src="zap.jpg">
+            </th>
+            {{/if}}
+            {{#if ebay.Id}}
+            <th class="title">
+                <img class="search-shopping-image" src="ebay.jpg">
+            </th>
+            {{/if}}
+            {{#if amazon.Id}}
+            <th class="title">
+                <img class="search-shopping-image" src="amazon.jpg">
+            </th>
+            {{/if}}
         </tr>
         <tr>
-            <td class="cell"></td>
-            <td class="cell"></td>
-            <td class="cell"></td>
-            <td class="cell"></td>
-            <td class="cell"></td>
-            <td class="cell"></td>
+            {{#if zap.Price}}
+            <td class="cell">
+                <label class="search-label" name="zapprice">{{zap.Price}} NIS</label>
+            </td>
+            {{/if}}
+            {{#if ebay.Price}}
+            <td class="cell">
+                <label class="search-label" name="ebayprice">${{ebay.Price}}</label>
+                <br>
+                <div class="search-label">Shipping price: $<span id="shipprice"></span></div>
+            </td>
+            {{/if}}
+            {{#if amazon.Price}}
+            <td class="cell">
+                <label class="search-label" name="amazonprice">{{amazon.Price}}</label>
+            </td>
+            {{/if}}
+        </tr>
+        <tr>
+            {{#if zap.Link}}
+            <td class="cell">
+                <a class="search-label" href="{{zap.Link}}">Watch</a>
+            </td>
+            {{/if}}
+            {{#if ebay.Link}}
+            <td class="cell">
+                <a class="search-label" href="{{ebay.Link}}">Watch</a>
+            </td>
+            {{/if}}
+            {{#if amazon.Link}}
+            <td class="cell">
+                <a class="search-label" href="{{amazon.Link}}">Watch</a>
+            </td>
+            {{/if}}
         </tr>
     </table>
 </div>

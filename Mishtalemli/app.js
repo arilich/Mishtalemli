@@ -31,7 +31,6 @@ server.connection(
     }
 );
 
-
 // Save user query in dynamo
 function storeSearch(username, zapId) {
     var table = 'Search';
@@ -67,7 +66,6 @@ function storeSearch(username, zapId) {
             });
         }
     });
-
 }
 
 server.views({
