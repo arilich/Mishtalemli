@@ -33,15 +33,41 @@ server.connection(
 
 
 // Save user query in dynamo
-function storeSearch(username, search) {
-    var table = 'Query';
-    var input = {
-        User : username,
-        Query : search
-    }
+function storeSearch(username, zapId) {
+    var table = 'Search';
+    var keyCondition =
+    {
+        'UserId': {
+            ComparisonOperator: 'EQ',
+            AttributeValueList: [{'S': username}]
+        }
+    };
 
-    dynamo.putItem(table, input).then(function () {
+    dynamo.query(table, keyCondition).then(function (result) {
+        // First time search
+        if (result.Count == 0) {
+            var input = {
+                UserId : {S : username},
+                ZapId : {S : zapId},
+                Rank : {S : '1'}
+            }
+            dynamo.putItem(table, input).then(function (putItemResult) {
+            });
+        // Update search rank
+        } else {
+            var newCount = parseInt(result.Items[0].Rank.S, 10) + 1;
+            var key = {UserId : {S : username}, ZapId : {S : zapId}};
+            var attributeUpdate = {
+                'Rank' : {
+                    Action : 'PUT',
+                    Value : {S : newCount.toString()}
+                }
+            }
+            dynamo.updateItem(table, key, attributeUpdate).then(function (updateItemResult) {
+            });
+        }
     });
+
 }
 
 server.views({
@@ -133,9 +159,13 @@ server.route({
     method: 'POST',
     path: '/search',
     handler: function (request, reply) {
+        var username = request.payload.email;
         if (request.payload.search) {
             console.log('zap search start');
             zap.search(request.payload.search).then(function (zapResult) {
+                if (zapResult.Id) {
+                    storeSearch(username, zapResult.Id);
+                }
                 console.log('zap search end');
                 console.log('ebay search start');
                 ebay.search(zapResult.Title).then(function (ebayResult) {

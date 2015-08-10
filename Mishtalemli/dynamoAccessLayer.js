@@ -34,10 +34,31 @@ module.exports = function (configs) {
         return defer.promise;
     }
 
-    function query(table, query, indexName) {
+    function query(table, keyCondition) {
         var defer = Promise.defer();
-        var params = {TableName : table, KeyConditions : query, ScanIndexForward : false, IndexName : indexName};
+        var params = {
+            TableName : table,
+            KeyConditions : keyCondition,
+            ScanIndexForward : false
+        };
+
         dynamodb.query(params, function (err, data) {
+            if (err) console.log(err, err.stack);
+            else defer.resolve(data);
+        });
+
+        return defer.promise;
+    }
+
+    function updateItem(table, key, attributeUpdates) {
+        var defer = Promise.defer();
+        var params = {
+            TableName : table,
+            Key : key,
+            AttributeUpdates : attributeUpdates
+        };
+
+        dynamodb.updateItem(params, function (err, data) {
             if (err) console.log(err, err.stack);
             else defer.resolve(data);
         });
@@ -49,6 +70,7 @@ module.exports = function (configs) {
         setup : setup,
         query : query,
         getItem : getItem,
-        putItem : putItem
+        putItem : putItem,
+        updateItem : updateItem
     };
 };
