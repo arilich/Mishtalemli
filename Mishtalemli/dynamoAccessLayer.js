@@ -14,7 +14,6 @@ module.exports = function (configs) {
     function getItem(table, key) {
         var defer = Promise.defer();
         var params = {TableName : table, Key : key};
-        console.log(params);
         dynamodb.getItem(params, function (err, data) {
             if (err) console.log(err, err.stack);
             else defer.resolve(data);
@@ -43,7 +42,7 @@ module.exports = function (configs) {
         };
 
         if (table == 'Recs') {
-            //params.IndexName = 'Rank-index';
+            params.IndexName = 'UserId-Rank-index';
             params.Limit = 3;
         }
 

@@ -74,6 +74,7 @@ function storeSearch(username, zapId, zapTitle) {
     });
 }
 
+// Get user recommendation
 function getRecommendations(username) {
     var defer = Promise.defer();
     var table = 'Recs';
@@ -85,8 +86,8 @@ function getRecommendations(username) {
         }
     };
 
-    // Get recommendation
     dynamo.query(table, keyCondition).then(function (recommentations) {
+        console.log(recommentations.Items);
         // Assuming in Rank order
         var firstRecZapId = recommentations.Items[0].ZapId.S;
         var getTitleKeyCondition = {
@@ -186,7 +187,6 @@ server.route({
             //check if user exist in dynamodb
             var query = {Email: {S: queryData.email}};
             dynamo.getItem(table, query).then(function (data) {
-                console.log(data);
                 if (data && data.Item && data.Item.Password.S == queryData.password) {
 
                     //user exist, redirect to search page
