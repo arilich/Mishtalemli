@@ -70,3 +70,14 @@ body {
     height: 100px;
     background-color: #ffffff;
 }
+
+.search-recommendation {
+     display: block;
+     text-align: center;
+}
+
+.search-recommendation-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

@@ -1,6 +1,7 @@
 var Path = require('path');
 var FS = require('fs');
 var Hapi = require('hapi');
+var Promise = require('bluebird');
 var CONFIGS = require('./configs.js');
 
 // Setup dynamo
@@ -32,7 +33,7 @@ server.connection(
 );
 
 // Save user query in dynamo
-function storeSearch(username, zapId) {
+function storeSearch(username, zapId, zapTitle) {
     var table = 'Search';
     var keyCondition =
     {
@@ -52,8 +53,9 @@ function storeSearch(username, zapId) {
             var input = {
                 UserId : {S : username},
                 ZapId : {S : zapId},
-                Rank : {S : '1'}
-            }
+                Rank : {S : '1'},
+                ZapTitle : {S : zapTitle}
+            };
             dynamo.putItem(table, input).then(function (putItemResult) {
             });
         // Update search rank
@@ -65,11 +67,55 @@ function storeSearch(username, zapId) {
                     Action : 'PUT',
                     Value : {S : newCount.toString()}
                 }
-            }
+            };
             dynamo.updateItem(table, key, attributeUpdate).then(function (updateItemResult) {
             });
         }
     });
+}
+
+function getRecommendations(username) {
+    var defer = Promise.defer();
+    var table = 'Recs';
+    var keyCondition =
+    {
+        'UserId' : {
+            ComparisonOperator : 'EQ',
+            AttributeValueList: [{'S': username}]
+        }
+    };
+
+    // Get recommendation
+    dynamo.query(table, keyCondition).then(function (recommentations) {
+        // Assuming in Rank order
+        var firstRecZapId = recommentations.Items[0].ZapId.S;
+        var getTitleKeyCondition = {
+            'UserId' : {
+                ComparisonOperator : 'EQ',
+                AttributeValueList: [{'S': username}]
+            },
+            'ZapId' : {
+                ComparisonOperator : 'EQ',
+                AttributeValueList: [{'S': firstRecZapId}]
+            }
+        };
+        // Get recommendation title
+        dynamo.query('Search', getTitleKeyCondition).then(function (titleResult) {
+            var title = (titleResult.Items[0].ZapTitle.S);
+            // Search recommendation on zap
+            zap.search(title).then(function (zapResult) {
+                ebay.search(title).then(function (ebayResult) {
+                       var response = {
+                           zap : zapResult,
+                           ebay : ebayResult
+                       };
+                       defer.resolve(response);
+                });
+            });
+        });
+    });
+
+    return defer.promise;
 }
 
 server.views({
@@ -166,7 +212,7 @@ server.route({
             console.log('zap search start');
             zap.search(request.payload.search).then(function (zapResult) {
                 if (zapResult.Id) {
-                    storeSearch(username, zapResult.Id);
+                    storeSearch(username, zapResult.Id, zapResult.Title);
                 }
                 console.log('zap search end');
                 console.log('ebay search start');
@@ -183,8 +229,10 @@ server.route({
                 });
             });
         } else {
-            console.log('search end');
-            return reply.view('search_empty.html', {zap: null, ebay: null, amazon: null, email: request.payload.email}, {layout: 'layout/layout'});
+            getRecommendations('test@gmail.com').then(function (recommendations) {
+                //var recommendations = recommendations;
+                return reply.view('search_empty.html', {recommendations : recommendations, zap: null, ebay: null, amazon: null, email: request.payload.email}, {layout: 'layout/layout'});
+            });
         }
     }
 });

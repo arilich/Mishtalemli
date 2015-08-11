@@ -6,6 +6,14 @@
     <link href="main.css" type="text/css" rel="stylesheet">
 </head>
 <body>
+{{#if recommendations}}
+<div id="recommendations">
+    <label class="search-recommendation">Recommendations</label>
+    <label class="search-recommendation">{{recommendations.zap.Title}}</label>
+    <image class="search-recommendation-image" src="{{recommendations.ebay.Image}}"></image>
+</div>
+{{/if}}
+
 <div id="searchdiv">
     <form class="form" id="searchform" method="post" action="/search">
         <input type="hidden" name="email" value="{{email}}">

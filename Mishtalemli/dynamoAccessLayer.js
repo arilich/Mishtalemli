@@ -42,6 +42,11 @@ module.exports = function (configs) {
             ScanIndexForward : false
         };
 
+        if (table == 'Recs') {
+            //params.IndexName = 'Rank-index';
+            params.Limit = 3;
+        }
+
         dynamodb.query(params, function (err, data) {
             if (err) console.log(err, err.stack);
             else defer.resolve(data);
