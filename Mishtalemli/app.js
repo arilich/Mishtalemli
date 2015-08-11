@@ -39,6 +39,10 @@ function storeSearch(username, zapId) {
         'UserId': {
             ComparisonOperator: 'EQ',
             AttributeValueList: [{'S': username}]
+        },
+        'ZapId': {
+            ComparisonOperator: 'EQ',
+            AttributeValueList: [{'S': zapId}]
         }
     };
 

@@ -17,7 +17,7 @@ SearchResponse.prototype.build = function (response, refferer){
     if (response) {
         if (refferer == 'ebay') {
             searchResponse.Title = response.title;
-            searchResponse.Price = response.sellingStatus.currentPrice.USD;
+            searchResponse.Price = '$' + response.sellingStatus.currentPrice.USD;
             searchResponse.Link = response.viewItemURL;
             searchResponse.Image = response.galleryURL;
             searchResponse.Id = response.itemId;
