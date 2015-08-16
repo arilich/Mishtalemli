@@ -13,7 +13,7 @@ module.exports = function (configs) {
 
     function getItem(table, key) {
         var defer = Promise.defer();
-        var params = {TableName : table, Key : key};
+        var params = {TableName: table, Key: key};
         dynamodb.getItem(params, function (err, data) {
             if (err) console.log(err, err.stack);
             else defer.resolve(data);
@@ -22,9 +22,28 @@ module.exports = function (configs) {
         return defer.promise;
     }
 
+    function getAtomicId() {
+        var defer = Promise.defer();
+        var params = {TableName: "Counters", Key: {CounterId: {S: "Users"}}};
+        dynamodb.getItem(params, function (err, data) {
+            if (err) console.log(err, err.stack);
+            else {
+                var newCount = parseInt(data.Item.Counter.N) + 1;
+                var key = {CounterId: {S: "Users"}};
+                var attributeUpdate = {
+                    Counter: {Action: 'PUT', Value: {N: newCount.toString()}}
+                };
+                updateItem("Counters", key, attributeUpdate);
+                defer.resolve(data);
+            }
+        });
+
+        return defer.promise;
+    }
+
     function putItem(table, item) {
         var defer = Promise.defer();
-        var params = {TableName : table, Item : item};
+        var params = {TableName: table, Item: item};
         dynamodb.putItem(params, function (err, data) {
             if (err) console.log(err, err.stack);
             else defer.resolve(data);
@@ -36,9 +55,9 @@ module.exports = function (configs) {
     function query(table, keyCondition) {
         var defer = Promise.defer();
         var params = {
-            TableName : table,
-            KeyConditions : keyCondition,
-            ScanIndexForward : false
+            TableName: table,
+            KeyConditions: keyCondition,
+            ScanIndexForward: false
         };
 
         if (table == 'Recs') {
@@ -57,9 +76,9 @@ module.exports = function (configs) {
     function updateItem(table, key, attributeUpdates) {
         var defer = Promise.defer();
         var params = {
-            TableName : table,
-            Key : key,
-            AttributeUpdates : attributeUpdates
+            TableName: table,
+            Key: key,
+            AttributeUpdates: attributeUpdates
         };
 
         dynamodb.updateItem(params, function (err, data) {
@@ -71,10 +90,11 @@ module.exports = function (configs) {
     }
 
     return {
-        setup : setup,
-        query : query,
-        getItem : getItem,
-        putItem : putItem,
-        updateItem : updateItem
+        setup: setup,
+        query: query,
+        getItem: getItem,
+        putItem: putItem,
+        updateItem: updateItem,
+        getAtomicId: getAtomicId
     };
 };
