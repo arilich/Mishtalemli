@@ -35,84 +35,113 @@ server.connection(
 // Save user query in dynamo
 function storeSearch(username, zapId, zapTitle) {
     var table = 'Search';
-    var keyCondition =
-    {
-        'UserId': {
+
+    dynamo.query('Users', {
+        'Email': {
             ComparisonOperator: 'EQ',
             AttributeValueList: [{'S': username}]
-        },
-        'ZapId': {
-            ComparisonOperator: 'EQ',
-            AttributeValueList: [{'S': zapId}]
         }
-    };
-
-    dynamo.query(table, keyCondition).then(function (result) {
-        // First time search
-        if (result.Count == 0) {
-            var input = {
-                UserId: {S: username},
-                ZapId: {S: zapId},
-                Rank: {S: '1'},
-                ZapTitle: {S: zapTitle}
-            };
-            dynamo.putItem(table, input).then(function (putItemResult) {
-            });
-            // Update search rank
-        } else {
-            var newCount = parseInt(result.Items[0].Rank.S, 10) + 1;
-            var key = {UserId: {S: username}, ZapId: {S: zapId}};
-            var attributeUpdate = {
-                'Rank': {
-                    Action: 'PUT',
-                    Value: {S: newCount.toString()}
-                }
-            };
-            dynamo.updateItem(table, key, attributeUpdate).then(function (updateItemResult) {
-            });
-        }
+    }).then(function (user) {
+        var keyCondition =
+        {
+            'UserId': {
+                ComparisonOperator: 'EQ',
+                AttributeValueList: [{'S': user.Items[0].UserId.S}]
+            },
+            'ZapId': {
+                ComparisonOperator: 'EQ',
+                AttributeValueList: [{'S': zapId}]
+            }
+        };
+        dynamo.query(table, keyCondition).then(function (result) {
+            // First time search
+            if (result.Count == 0) {
+                var input = {
+                    UserId: {S: user.Items[0].UserId.S},
+                    ZapId: {S: zapId},
+                    Rank: {S: '1'},
+                    ZapTitle: {S: zapTitle}
+                };
+                dynamo.putItem(table, input).then(function (putItemResult) {
+                });
+                // Update search rank
+            } else {
+                var newCount = parseInt(result.Items[0].Rank.S, 10) + 1;
+                var key = {UserId: {S: user.Items[0].UserId.S}, ZapId: {S: zapId}};
+                var attributeUpdate = {
+                    'Rank': {
+                        Action: 'PUT',
+                        Value: {S: newCount.toString()}
+                    }
+                };
+                dynamo.updateItem(table, key, attributeUpdate).then(function (updateItemResult) {
+                });
+            }
+        });
     });
 }
 
 // Get user recommendation
 function getRecommendations(username) {
     var defer = Promise.defer();
-    var table = 'Recs';
-    var keyCondition =
-    {
-        'UserId': {
+    var table = 'Recommendations';
+
+    dynamo.query('Users', {
+        'Email': {
             ComparisonOperator: 'EQ',
             AttributeValueList: [{'S': username}]
         }
-    };
+    }).then(function (user) {
 
-    dynamo.query(table, keyCondition).then(function (recommentations) {
-        console.log(recommentations.Items);
-        // Assuming in Rank order
-        var firstRecZapId = recommentations.Items[0].ZapId.S;
-        var getTitleKeyCondition = {
+
+        console.log(user.Items[0].UserId.S);
+        var keyCondition =
+        {
             'UserId': {
                 ComparisonOperator: 'EQ',
-                AttributeValueList: [{'S': username}]
-            },
-            'ZapId': {
-                ComparisonOperator: 'EQ',
-                AttributeValueList: [{'S': firstRecZapId}]
+                AttributeValueList: [{'S': user.Items[0].UserId.S}]
             }
         };
-        // Get recommendation title
-        dynamo.query('Search', getTitleKeyCondition).then(function (titleResult) {
-            var title = (titleResult.Items[0].ZapTitle.S);
-            // Search recommendation on zap
-            zap.search(title).then(function (zapResult) {
-                ebay.search(title).then(function (ebayResult) {
-                    var response = {
-                        zap: zapResult,
-                        ebay: ebayResult
-                    };
-                    defer.resolve(response);
+
+        dynamo.query(table, keyCondition).then(function (recommentations) {
+            console.log(recommentations);
+            if (recommentations.Count > 0) {
+                // Assuming in Rank order
+                var firstRecZapId = recommentations.Items[0].Recommendations.SS[0];
+                firstRecZapId = firstRecZapId.substring(firstRecZapId.indexOf('[') + 1, firstRecZapId.indexOf(',')).substring(0, firstRecZapId.indexOf(':') - 1).toString();
+                var getTitleKeyCondition = {
+                    'UserId': {
+                        ComparisonOperator: 'EQ',
+                        AttributeValueList: [{'S': user.Items[0].UserId.S}]
+                    },
+                    'ZapId': {
+                        ComparisonOperator: 'EQ',
+                        AttributeValueList: [{'S': firstRecZapId}]
+                    }
+                };
+                // Get recommendation title
+                dynamo.query('Search', getTitleKeyCondition).then(function (titleResult) {
+                    if (titleResult.Count > 0) {
+                        var title = (titleResult.Items[0].ZapTitle.S);
+                        // Search recommendation on zap
+                        zap.search(title).then(function (zapResult) {
+                            ebay.search(title).then(function (ebayResult) {
+                                var response = {
+                                    zap: zapResult,
+                                    ebay: ebayResult
+                                };
+                                defer.resolve(response);
+                            });
+                        });
+                    } else {
+                        // No title match found - shouldn't happen
+                        defer.resolve(null);
+                    }
                 });
-            });
+            } else {
+                // No recommendations
+                defer.resolve(null);
+            }
         });
     });
 
@@ -175,15 +204,17 @@ server.route({
 
         // Check if request come from sign in
         else if (request.payload.email) {
-            var query = {
-                Email: {S: request.payload.email},
-                Password: {S: request.payload.password}
+            var keyCondition =
+            {
+                'Email': {
+                    ComparisonOperator: 'EQ',
+                    AttributeValueList: [{'S': request.payload.email}]
+                }
             };
 
             //check if user exist in dynamodb
-            dynamo.getItem(table, query).then(function (data) {
-                if (data && data.Item && data.Item.Password.S == query.Password) {
-
+            dynamo.query(table, keyCondition).then(function (data) {
+                if (data && data.Items && data.Items[0].Password.S == request.payload.password) {
                     //user exist, redirect to search page
                     return reply.redirect('search').rewritable(false);
                 } else {
@@ -230,7 +261,7 @@ server.route({
                 });
             });
         } else {
-            getRecommendations('test@gmail.com').then(function (recommendations) {
+            getRecommendations(username).then(function (recommendations) {
                 //var recommendations = recommendations;
                 return reply.view('search_empty.html', {
                     recommendations: recommendations,

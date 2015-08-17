@@ -45,27 +45,31 @@ module.exports = function () {
             // Match found - No Errors
             else {
                 // If hidden price
-                if (results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0] === 'Too low to display') {
-                    var ptd = results.ItemSearchResponse.Items[0].Item[0].ItemAttributes[0].ProductTypeName[0]
-                    var asin = results.ItemSearchResponse.Items[0].Item[0].ASIN[0];
-                    var priceUrl = 'http://www.amazon.com/gp/product/ajax-handlers/generic-hlcx.html?ie=UTF8&ptd=' + ptd + '&useTwister=true&viewId=MAP_AJAX&ASIN=' + asin + '&optionalParams={"mapPopover":"true","coliid":null,"colid":null,"isPrime":"0"}&wdg=pc_display_on_website&isVariationalParent=false';
-                    request({
-                        method: 'GET',
-                        url: priceUrl
-                    }, function (err, response, body) {
-                        if (err) return console.error(err);
-                        $ = cheerio.load(body);
-                        var price = $('span#priceblock_ourprice').html();
+                if (results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer) {
+                    if (results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0] === 'Too low to display') {
+                        var ptd = results.ItemSearchResponse.Items[0].Item[0].ItemAttributes[0].ProductTypeName[0]
+                        var asin = results.ItemSearchResponse.Items[0].Item[0].ASIN[0];
+                        var priceUrl = 'http://www.amazon.com/gp/product/ajax-handlers/generic-hlcx.html?ie=UTF8&ptd=' + ptd + '&useTwister=true&viewId=MAP_AJAX&ASIN=' + asin + '&optionalParams={"mapPopover":"true","coliid":null,"colid":null,"isPrime":"0"}&wdg=pc_display_on_website&isVariationalParent=false';
+                        request({
+                            method: 'GET',
+                            url: priceUrl
+                        }, function (err, response, body) {
+                            if (err) return console.error(err);
+                            $ = cheerio.load(body);
+                            var price = $('span#priceblock_ourprice').html();
+                            results.price = price;
+                            response = searchResponse.build(results, 'amazon');
+                            defer.resolve(response);
+                        });
+                        // No hidden price
+                    } else {
+                        var price = results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0];
                         results.price = price;
                         response = searchResponse.build(results, 'amazon');
                         defer.resolve(response);
-                    });
-                // No hidden price
+                    }
                 } else {
-                    var price = results.ItemSearchResponse.Items[0].Item[0].Offers[0].Offer[0].OfferListing[0].Price[0].FormattedPrice[0];
-                    results.price = price;
-                    response = searchResponse.build(results, 'amazon');
-                    defer.resolve(response);
+                    defer.resolve(null);
                 }
                 // Lowest Price
                 //console.log(results.ItemSearchResponse.Items[0].Item[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0]);
