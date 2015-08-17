@@ -9,8 +9,74 @@
 {{#if recommendations}}
 <div id="recommendations">
     <label class="search-recommendation">Recommendations</label>
-    <label class="search-recommendation">{{recommendations.zap.Title}}</label>
-    <image class="search-recommendation-image" src="{{recommendations.ebay.Image}}"></image>
+    {{#if recommendations.Ebay.Image}}
+    <img class="search-image" src="{{recommendations.Ebay.Image}}" alt="Item">
+    {{else}}
+    {{#if recommendations.Amazon.Image}}
+    <img class="search-image" src="{{recommendations.Amazon.Image}}" alt="Item">
+    {{/if}}
+    {{/if}}
+    <br>
+    {{#if recommendations.Zap.Title}}
+    <label class="search-label" name="zaptitle">{{recommendations.Zap.Title}}</label>
+    {{/if}}
+    <div id="table" class="search-table">
+        <table id="orderTable" align="center">
+            <tr>
+                {{#if recommendations.Zap.Id}}
+                <th class="title">
+                    <img class="search-shopping-image" src="zap.jpg">
+                </th>
+                {{/if}}
+                {{#if recommendations.Ebay.Id}}
+                <th class="title">
+                    <img class="search-shopping-image" src="ebay.jpg">
+                </th>
+                {{/if}}
+                {{#if recommendations.Amazon.Id}}
+                <th class="title">
+                    <img class="search-shopping-image" src="amazon.jpg">
+                </th>
+                {{/if}}
+            </tr>
+            <tr>
+                {{#if recommendations.Zap.Price}}
+                <td class="cell">
+                    <label class="search-label" name="zapprice">{{recommendations.Zap.Price}} NIS</label>
+                </td>
+                {{/if}}
+                {{#if recommendations.Ebay.Price}}
+                <td class="cell">
+                    <label class="search-label" name="ebayprice">{{recommendations.Ebay.Price}}</label>
+                    <br>
+                    <div class="search-label">Shipping price: $<span id="shipprice"></span></div>
+                </td>
+                {{/if}}
+                {{#if recommendations.Amazon.Price}}
+                <td class="cell">
+                    <label class="search-label" name="amazonprice">{{recommendations.Amazon.Price}}</label>
+                </td>
+                {{/if}}
+            </tr>
+            <tr>
+                {{#if recommendations.Zap.Link}}
+                <td class="cell">
+                    <a class="search-label" href="{{recommendations.Zap.Link}}">Watch</a>
+                </td>
+                {{/if}}
+                {{#if recommendations.Ebay.Link}}
+                <td class="cell">
+                    <a class="search-label" href="{{recommendations.Ebay.Link}}">Watch</a>
+                </td>
+                {{/if}}
+                {{#if recommendations.Amazon.Link}}
+                <td class="cell">
+                    <a class="search-label" href="{{recommendations.Amazon.Link}}">Watch</a>
+                </td>
+                {{/if}}
+            </tr>
+        </table>
+    </div>
 </div>
 {{/if}}
 

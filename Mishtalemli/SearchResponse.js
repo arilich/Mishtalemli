@@ -8,7 +8,6 @@ function SearchResponse() {
 }
 
 SearchResponse.prototype.setup = function () {
-
 };
 
 SearchResponse.prototype.build = function (response, refferer) {

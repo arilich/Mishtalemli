@@ -99,11 +99,13 @@ function getRecommendations(username) {
         };
 
         dynamo.query('Recommendations', keyCondition).then(function (recommendations) {
-            if (recommentations.Count > 0) {
+            if (recommendations.Count > 0) {
                 console.log(recommendations.Items[0].Recommendations.SS);
+
                 // Assuming in Rank order
-                var firstRecZapId = recommentations.Items[0].Recommendations.SS[0];
+                var firstRecZapId = recommendations.Items[0].Recommendations.SS[0];
                 firstRecZapId = firstRecZapId.substring(1, firstRecZapId.length - 1).split(',')[0].substring(0, firstRecZapId.indexOf(':') - 1).toString();
+                console.log(firstRecZapId);
                 var getTitleKeyCondition = {
                     ItemId: {
                         ComparisonOperator: 'EQ',
@@ -113,13 +115,11 @@ function getRecommendations(username) {
 
                 // Get recommendation title
                 dynamo.query('Items', getTitleKeyCondition).then(function (itemResult) {
-                    console.log(itemResult.ItemId.S);
                     console.log(itemResult);
-                    if (itemResult) {
+                    if (itemResult.Count > 0) {
                         // TODO: parse object from SearchResponse
-                        var itemDetails = JSON.parse(itemResult.ItemDetails);
-                        console.log(itemDetails);
-                        defer.resolve(null);
+                        var itemDetails = JSON.parse(itemResult.Items[0].Details.S);
+                        defer.resolve(itemDetails);
                     } else {
                         // No title match found - shouldn't happen
                         defer.resolve(null);
@@ -220,7 +220,6 @@ server.route({
     method: 'POST',
     path: '/search',
     handler: function (request, reply) {
-        //TODO: change email to userid
         var username = request.payload.email;
         if (request.payload.search) {
             console.log('zap search start');
