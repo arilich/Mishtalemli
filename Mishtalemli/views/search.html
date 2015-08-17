@@ -28,7 +28,17 @@
 
             if (httpRequest.readyState == 4 && httpRequest.status == 200) {
                 var jsonResponse = JSON.parse(httpRequest.responseText);
-                document.getElementById('shipprice').innerHTML = jsonResponse.ShippingCostSummary.ShippingServiceCost.Value;
+                if (jsonResponse.ShippingCostSummary) {
+                    if (jsonResponse.ShippingCostSummary.ShippingServiceCost) {
+                        document.getElementById('shipprice').innerHTML = jsonResponse.ShippingCostSummary.ShippingServiceCost.Value;
+                    } else {
+                        document.getElementById('shipprice').innerHTML = 0;
+                    }
+                } else {
+                    document.getElementById('shipprice').innerHTML = 0;
+                }
+            } else {
+                document.getElementById('shipprice').innerHTML = 0;
             }
         };
 
