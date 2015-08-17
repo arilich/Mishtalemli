@@ -92,9 +92,6 @@ function getRecommendations(username) {
             AttributeValueList: [{'S': username}]
         }
     }).then(function (user) {
-
-
-        console.log(user.Items[0].UserId.S);
         var keyCondition =
         {
             'UserId': {
@@ -104,15 +101,15 @@ function getRecommendations(username) {
         };
 
         dynamo.query(table, keyCondition).then(function (recommentations) {
-            console.log(recommentations);
             if (recommentations.Count > 0) {
+                console.log(recommentations.Items[0].Recommendations.SS);
                 // Assuming in Rank order
                 var firstRecZapId = recommentations.Items[0].Recommendations.SS[0];
-                firstRecZapId = firstRecZapId.substring(firstRecZapId.indexOf('[') + 1, firstRecZapId.indexOf(',')).substring(0, firstRecZapId.indexOf(':') - 1).toString();
+                firstRecZapId = firstRecZapId.substring(1, firstRecZapId.length - 1).split(',')[0].substring(0, firstRecZapId.indexOf(':') - 1).toString();
                 var getTitleKeyCondition = {
                     'UserId': {
                         ComparisonOperator: 'EQ',
-                        AttributeValueList: [{'S': user.Items[0].UserId.S}]
+                        AttributeValueList: [{'S': '101'}]
                     },
                     'ZapId': {
                         ComparisonOperator: 'EQ',
@@ -121,6 +118,9 @@ function getRecommendations(username) {
                 };
                 // Get recommendation title
                 dynamo.query('Search', getTitleKeyCondition).then(function (titleResult) {
+                    console.log(user.Items[0].UserId.S);
+                    console.log(firstRecZapId);
+                    console.log(titleResult);
                     if (titleResult.Count > 0) {
                         var title = (titleResult.Items[0].ZapTitle.S);
                         // Search recommendation on zap
