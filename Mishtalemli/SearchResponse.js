@@ -7,11 +7,11 @@ function SearchResponse() {
     this.Refferer = null;
 }
 
-SearchResponse.prototype.setup = function (){
+SearchResponse.prototype.setup = function () {
 
 };
 
-SearchResponse.prototype.build = function (response, refferer){
+SearchResponse.prototype.build = function (response, refferer) {
     var searchResponse = new SearchResponse();
     searchResponse.Refferer = refferer;
     if (response) {
@@ -42,6 +42,17 @@ SearchResponse.prototype.build = function (response, refferer){
     return searchResponse;
 };
 
+SearchResponse.prototype.isEmpty = function (searchResponse) {
+    if (searchResponse.Title == null &&
+        searchResponse.Price == null &&
+        searchResponse.Link == null &&
+        searchResponse.Image == null &&
+        searchResponse.Id == null) {
+        return true;
+    } else {
+        return false;
+    }
+};
 var searchResponse = new SearchResponse();
 searchResponse.setup();
 module.exports = searchResponse;

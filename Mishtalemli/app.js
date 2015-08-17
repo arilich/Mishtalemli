@@ -2,7 +2,7 @@ var Path = require('path');
 var Hapi = require('hapi');
 var Promise = require('bluebird');
 var CONFIGS = require('./configs.js');
-
+var searchResponse = require('./SearchResponse.js');
 // Setup dynamo
 var dynamo = require('./dynamoAccessLayer')(CONFIGS);
 dynamo.setup();
@@ -84,8 +84,6 @@ function storeSearch(username, zapId, zapTitle) {
 // Get user recommendation
 function getRecommendations(username) {
     var defer = Promise.defer();
-    var table = 'Recommendations';
-
     dynamo.query('Users', {
         'Email': {
             ComparisonOperator: 'EQ',
@@ -100,39 +98,28 @@ function getRecommendations(username) {
             }
         };
 
-        dynamo.query(table, keyCondition).then(function (recommentations) {
+        dynamo.query('Recommendations', keyCondition).then(function (recommendations) {
             if (recommentations.Count > 0) {
-                console.log(recommentations.Items[0].Recommendations.SS);
+                console.log(recommendations.Items[0].Recommendations.SS);
                 // Assuming in Rank order
                 var firstRecZapId = recommentations.Items[0].Recommendations.SS[0];
                 firstRecZapId = firstRecZapId.substring(1, firstRecZapId.length - 1).split(',')[0].substring(0, firstRecZapId.indexOf(':') - 1).toString();
                 var getTitleKeyCondition = {
-                    'UserId': {
-                        ComparisonOperator: 'EQ',
-                        AttributeValueList: [{'S': '101'}]
-                    },
-                    'ZapId': {
+                    ItemId: {
                         ComparisonOperator: 'EQ',
                         AttributeValueList: [{'S': firstRecZapId}]
                     }
                 };
+
                 // Get recommendation title
-                dynamo.query('Search', getTitleKeyCondition).then(function (titleResult) {
-                    console.log(user.Items[0].UserId.S);
-                    console.log(firstRecZapId);
-                    console.log(titleResult);
-                    if (titleResult.Count > 0) {
-                        var title = (titleResult.Items[0].ZapTitle.S);
-                        // Search recommendation on zap
-                        zap.search(title).then(function (zapResult) {
-                            ebay.search(title).then(function (ebayResult) {
-                                var response = {
-                                    zap: zapResult,
-                                    ebay: ebayResult
-                                };
-                                defer.resolve(response);
-                            });
-                        });
+                dynamo.query('Items', getTitleKeyCondition).then(function (itemResult) {
+                    console.log(itemResult.ItemId.S);
+                    console.log(itemResult);
+                    if (itemResult) {
+                        // TODO: parse object from SearchResponse
+                        var itemDetails = JSON.parse(itemResult.ItemDetails);
+                        console.log(itemDetails);
+                        defer.resolve(null);
                     } else {
                         // No title match found - shouldn't happen
                         defer.resolve(null);
@@ -238,25 +225,38 @@ server.route({
         if (request.payload.search) {
             console.log('zap search start');
             zap.search(request.payload.search).then(function (zapResult) {
-                if (zapResult.Id) {
-                    storeSearch(username, zapResult.Id, zapResult.Title);
+
+                if (searchResponse.isEmpty(zapResult)) {
+                    return reply.view('search.html', {
+                        zap: null,
+                        ebay: null,
+                        amazon: null,
+                        email: request.payload.email
+                    }, {layout: 'layout/layout'});
                 }
+
                 console.log('zap search end');
                 console.log('ebay search start');
                 ebay.search(zapResult.Title).then(function (ebayResult) {
                     console.log('ebay search end');
                     console.log('amazon search start');
                     amazon.search(zapResult.Title).then(function (amazonResult) {
-                        console.log('amazon search end');
-                        console.log('zapResult: ' + JSON.stringify(zapResult));
-                        console.log('ebayResult: ' + JSON.stringify(ebayResult));
-                        console.log('amazonResult: ' + JSON.stringify(amazonResult));
-                        return reply.view('search.html', {
-                            zap: zapResult,
-                            ebay: ebayResult,
-                            amazon: amazonResult,
-                            email: request.payload.email
-                        }, {layout: 'layout/layout'});
+                        var itemDetails = {Zap: zapResult, Ebay: ebayResult, Amazon: amazonResult};
+                        var searchItem = {ItemId: {S: zapResult.Id}, Details: {S: JSON.stringify(itemDetails)}};
+                        dynamo.putItem("Items", searchItem).then(function (data) {
+                            storeSearch(username, zapResult.Id, zapResult.Title);
+                            console.log('amazon search end');
+                            console.log('zapResult: ' + JSON.stringify(zapResult));
+                            console.log('ebayResult: ' + JSON.stringify(ebayResult));
+                            console.log('amazonResult: ' + JSON.stringify(amazonResult));
+
+                            return reply.view('search.html', {
+                                zap: zapResult,
+                                ebay: ebayResult,
+                                amazon: amazonResult,
+                                email: request.payload.email
+                            }, {layout: 'layout/layout'});
+                        });
                     });
                 });
             });
@@ -273,7 +273,8 @@ server.route({
             });
         }
     }
-});
+})
+;
 
 server.route({
     method: 'GET',
